@@ -1,0 +1,44 @@
+NestedLayouts
+===============
+
+Introduction goes here.
+
+This allow you to render action, partial, template within more than one layout.
+
+IMPORTANT !
+Usually when you write just file name without specific path, it will pick layout from views/layouts folder.
+In this plugin it will pick layout from views/controller_name folder.
+In future, i will improve "searching" of layouts that will improve back compatibility.
+First it will try to find in layouts folder then in controller view folder
+
+
+
+Example
+=======
+
+class CarsController < ApplicationController
+
+	layout %w{layouts/application cars_layout}, :only => :index
+
+	def index
+	# Will render action index within layouts cars/cars_layout and layouts/application
+	end
+	
+	def show
+	render :layout => %w{layouts/application cars_layout layouts/big_font_layout}
+	# Will render action index within layouts "layouts/big_font_layout", "cars/cars_layout" and "layouts/application"
+	end
+
+end
+
+class TruckController < CarsController
+
+	next_layouts "trucks/trucks_layout"
+	
+	def index
+	# This will inherit layouts from CarsController and add "trucks/trucks_layout"
+	end
+
+end
+
+Copyright (c) 2009 David Schovanec, released under the MIT license
