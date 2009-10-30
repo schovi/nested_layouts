@@ -131,7 +131,7 @@ class ActionController::Base #:nodoc:
 
   ## Create inteligent searching of layouts
   def find_layout(layout, format, html_fallback=false) #:nodocs:
-    view_paths.find_template(layout.to_s =~ /layouts\// ? layout : "#{self.class.to_s.underscore.gsub('_controller', '')}/#{layout}", format, html_fallback)              
+    view_paths.find_template(layout, format, html_fallback, self.class.to_s.underscore.gsub('_controller', ''))
   rescue ActionView::MissingTemplate
     raise if Mime::Type.lookup_by_extension(format.to_s).html?
   end

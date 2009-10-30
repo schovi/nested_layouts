@@ -123,3 +123,47 @@ end
 #   end
 # 
 # end
+
+class ActionView::PathSet
+
+  def find_template(original_template_path, format = nil, html_fallback = true, controller_name = false)
+    return original_template_path if original_template_path.respond_to?(:render)
+    template_path = original_template_path.sub(/^\//, '')
+
+    each do |load_path|
+      if controller_name and not original_template_path =~ /\//
+        if format && (template = load_path["layouts/#{template_path}.#{I18n.locale}.#{format}"])
+          return template
+        elsif format && (template = load_path["layouts/#{template_path}.#{format}"])
+          return template
+        elsif template = load_path["layouts/#{template_path}.#{I18n.locale}"]
+          return template
+        elsif format && (template = load_path["#{controller_name}/#{template_path}.#{I18n.locale}.#{format}"])
+          return template
+        elsif format && (template = load_path["#{controller_name}/#{template_path}.#{format}"])
+          return template
+        elsif template = load_path["#{controller_name}/#{template_path}.#{I18n.locale}"]
+          return template
+        end
+      elsif format && (template = load_path["#{template_path}.#{I18n.locale}.#{format}"])
+        return template
+      elsif format && (template = load_path["#{template_path}.#{format}"])
+        return template
+      elsif template = load_path["#{template_path}.#{I18n.locale}"]
+        return template
+      elsif template = load_path[template_path]
+        return template
+        # Try to find html version if the format is javascript
+      elsif format == :js && html_fallback && template = load_path["#{template_path}.#{I18n.locale}.html"]
+        return template
+      elsif format == :js && html_fallback && template = load_path["#{template_path}.html"]
+        return template
+      end
+    end
+
+    return Template.new(original_template_path) if File.file?(original_template_path)
+
+    raise MissingTemplate.new(self, original_template_path, format)
+  end
+
+end
