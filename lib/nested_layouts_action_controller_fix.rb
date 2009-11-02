@@ -129,9 +129,26 @@ class ActionController::Base #:nodoc:
     nil
   end
 
-  ## Create inteligent searching of layouts
+  ## Improved searching of layouts.
+  # I know it is not 'good' implementantion, but temporary it can solve the problem :)
   def find_layout(layout, format, html_fallback=false) #:nodocs:
-    view_paths.find_template(layout, format, html_fallback, self.class.to_s.underscore.gsub('_controller', ''))
+    if layout.to_s =~ /\//
+      begin
+        found_layout = view_paths.find_template(layout, format, html_fallback)
+      rescue => missing_layout_ex
+      end
+    else
+      begin
+        found_layout = view_paths.find_template("layouts/#{layout}", format, html_fallback)
+      rescue => missing_layout_ex
+      end
+      found_layout = view_paths.find_template("#{self.class.to_s.underscore.gsub('_controller', '')}/#{layout}", format, html_fallback) if missing_layout_ex 
+    end
+    if found_layout
+      return found_layout
+    else
+      raise missing_layout_ex
+    end
   rescue ActionView::MissingTemplate
     raise if Mime::Type.lookup_by_extension(format.to_s).html?
   end
